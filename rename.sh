@@ -22,7 +22,7 @@ fi
 SQL="CALL rename_columns_in_schema('$SCHEMA_NAME');"
 
 psql -h "$DB_HOST" -p "$DB_PORT" -d "$DB_NAME" -U "$DB_USER" \
-     -c "$SQL" 2>&1 | grep "NOTICE"
+     -c "$SQL" 2>&1 | grep "NOTICE" | sed 's/NOTICE: //'
 
 # Check for execution errors
 if [ $? -ne 0 ]; then
