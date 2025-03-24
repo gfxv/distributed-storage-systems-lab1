@@ -7,13 +7,19 @@ DECLARE
     columns_renamed_count INTEGER := 0;
     tables_changed_count INTEGER := 0;
     cur CURSOR FOR
-        SELECT table_name, column_name,
-               REPLACE(REPLACE(column_name, '"', ''), '''', '') AS new_column_name
-        FROM information_schema.columns
-        WHERE table_schema = schema_name
-          AND (column_name LIKE '%"%' OR column_name LIKE '%''%');
+        SELECT c.relname AS table_name, a.attname AS column_name,
+               REPLACE(REPLACE(a.attname, '"', ''), '''', '') AS new_column_name
+        FROM pg_catalog.pg_class c
+                 JOIN
+             pg_catalog.pg_attribute a ON c.oid = a.attrelid
+                 JOIN
+             pg_catalog.pg_namespace n ON c.relnamespace = n.oid
+        WHERE
+            n.nspname = schema_name
+          AND (a.attname LIKE '%"%' OR a.attname LIKE '%''%');
     rec RECORD;
     prev_table_name TEXT := '';
+
 BEGIN
     FOR rec IN cur LOOP
             EXECUTE format(
